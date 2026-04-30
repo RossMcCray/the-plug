@@ -22,6 +22,13 @@ export async function POST(request: NextRequest) {
     }
   }
 
+  // Reject oversized bodies before buffering them
+  const MAX_BODY_BYTES = 35 * 1024 * 1024; // 30 MB images + JSON overhead
+  const contentLength = parseInt(request.headers.get('content-length') ?? '0', 10);
+  if (contentLength > MAX_BODY_BYTES) {
+    return NextResponse.json({ error: 'Payload too large' }, { status: 413 });
+  }
+
   try {
     // Catch malformed JSON separately so it returns 400, not 500
     let body: unknown;

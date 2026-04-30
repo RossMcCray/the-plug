@@ -44,13 +44,9 @@ export default function ExtractorPage() {
     if (!niche.trim()) { setError('Enter your niche first.'); return; }
     setLoading(true);
     try {
-      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-      const secret = process.env.NEXT_PUBLIC_EXTRACT_API_SECRET;
-      if (secret) headers['Authorization'] = `Bearer ${secret}`;
-
       const res = await fetch('/api/extract-hooks', {
         method: 'POST',
-        headers,
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ images, niche }),
       });
       const data = await res.json();
