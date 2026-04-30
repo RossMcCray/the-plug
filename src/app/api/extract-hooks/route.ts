@@ -3,33 +3,71 @@ import Anthropic from '@anthropic-ai/sdk';
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
+const VALID_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'] as const;
+type ValidMediaType = (typeof VALID_TYPES)[number];
+
+const MAX_PER_IMAGE_BYTES = 10 * 1024 * 1024; // 10 MB decoded
+const MAX_TOTAL_BYTES = 30 * 1024 * 1024;     // 30 MB decoded total
+
 export async function POST(request: NextRequest) {
-  try {
-    const { images, niche } = await request.json();
-
-    if (!images?.length || !niche?.trim()) {
-      return NextResponse.json({ error: 'images and niche are required' }, { status: 400 });
+  // Optional shared-secret guard. Set EXTRACT_API_SECRET in .env.local to enable.
+  const requiredSecret = process.env.EXTRACT_API_SECRET;
+  if (requiredSecret) {
+    const auth = request.headers.get('authorization') ?? '';
+    if (auth !== `Bearer ${requiredSecret}`) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
+  }
 
+  try {
+    const body = await request.json();
+    const { images, niche } = body;
+
+    // Validate top-level shape
+    if (!Array.isArray(images) || images.length === 0 || !niche?.trim?.()) {
+      return NextResponse.json({ error: 'images (array) and niche are required' }, { status: 400 });
+    }
     if (images.length > 10) {
       return NextResponse.json({ error: 'Maximum 10 images allowed' }, { status: 400 });
     }
 
-    const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
-    const imageBlocks: Anthropic.ImageBlockParam[] = images.map(
-      (img: { data: string; mediaType: string }) => {
-        if (!validTypes.includes(img.mediaType)) {
-          throw new Error(`Invalid media type: ${img.mediaType}`);
-        }
-        return {
-          type: 'image',
-          source: {
-            type: 'base64',
-            media_type: img.mediaType as 'image/jpeg' | 'image/png' | 'image/gif' | 'image/webp',
-            data: img.data,
-          },
-        };
+    // Validate each image + enforce size limits
+    let totalBytes = 0;
+    for (let idx = 0; idx < images.length; idx++) {
+      const img = images[idx];
+      if (
+        typeof img !== 'object' ||
+        typeof img.data !== 'string' ||
+        img.data.length === 0 ||
+        typeof img.mediaType !== 'string' ||
+        !(VALID_TYPES as readonly string[]).includes(img.mediaType)
+      ) {
+        return NextResponse.json(
+          { error: `Image ${idx + 1} has an invalid shape or unsupported media type` },
+          { status: 400 }
+        );
       }
+      const decodedBytes = Math.floor(img.data.length * 0.75);
+      if (decodedBytes > MAX_PER_IMAGE_BYTES) {
+        return NextResponse.json(
+          { error: `Image ${idx + 1} exceeds the 10 MB per-image limit` },
+          { status: 413 }
+        );
+      }
+      totalBytes += decodedBytes;
+      if (totalBytes > MAX_TOTAL_BYTES) {
+        return NextResponse.json(
+          { error: 'Total image payload exceeds the 30 MB limit' },
+          { status: 413 }
+        );
+      }
+    }
+
+    const imageBlocks: Anthropic.ImageBlockParam[] = images.map(
+      (img: { data: string; mediaType: ValidMediaType }) => ({
+        type: 'image',
+        source: { type: 'base64', media_type: img.mediaType, data: img.data },
+      })
     );
 
     const prompt = `Analyze this TikTok slideshow and:
@@ -49,12 +87,7 @@ Format your response as valid JSON only, with this exact structure — no markdo
     const response = await anthropic.messages.create({
       model: 'claude-opus-4-7',
       max_tokens: 2048,
-      messages: [
-        {
-          role: 'user',
-          content: [...imageBlocks, { type: 'text', text: prompt }],
-        },
-      ],
+      messages: [{ role: 'user', content: [...imageBlocks, { type: 'text', text: prompt }] }],
     });
 
     const content = response.content[0];
@@ -68,6 +101,21 @@ Format your response as valid JSON only, with this exact structure — no markdo
     }
 
     const parsed = JSON.parse(jsonMatch[0]);
+
+    // Validate response shape
+    if (
+      typeof parsed.mainHook !== 'string' ||
+      typeof parsed.whyItWorks !== 'string' ||
+      !Array.isArray(parsed.variations) ||
+      parsed.variations.length !== 7 ||
+      parsed.variations.some((v: unknown) => typeof v !== 'string') ||
+      !Array.isArray(parsed.pinterestQueries) ||
+      parsed.pinterestQueries.length !== 5 ||
+      parsed.pinterestQueries.some((q: unknown) => typeof q !== 'string')
+    ) {
+      return NextResponse.json({ error: 'Claude returned an unexpected payload shape' }, { status: 502 });
+    }
+
     return NextResponse.json(parsed);
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Failed to extract hooks';

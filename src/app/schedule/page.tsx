@@ -13,13 +13,19 @@ function toIso(local: string): string {
   return new Date(local).toISOString();
 }
 
+// POSIX single-quote shell quoting: wrap in '', escaping any embedded ' as '"'"'
+function shellQuote(value: string): string {
+  return `'${value.split("'").join(`'"'"'`)}'`;
+}
+
+const isReady = (e: PostEntry) => Boolean(e.caption && e.filePath && e.scheduledAt);
+
 function buildCommand(entry: PostEntry): string {
-  const caption = entry.caption.replace(/"/g, '\\"');
-  return `postiz posts:create -c "${caption}" -m "${entry.filePath}" -s "${toIso(entry.scheduledAt)}"`;
+  return `postiz posts:create -c ${shellQuote(entry.caption)} -m ${shellQuote(entry.filePath)} -s ${shellQuote(toIso(entry.scheduledAt))}`;
 }
 
 function buildBatchScript(entries: PostEntry[]): string {
-  return entries.map(buildCommand).join('\n');
+  return entries.filter(isReady).map(buildCommand).join('\n');
 }
 
 export default function SchedulePage() {
@@ -50,7 +56,7 @@ export default function SchedulePage() {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const readyCount = entries.filter((e) => e.caption && e.filePath && e.scheduledAt).length;
+  const readyCount = entries.filter(isReady).length;
 
   return (
     <div className="space-y-8">
@@ -143,8 +149,8 @@ export default function SchedulePage() {
         </div>
 
         <pre className="overflow-x-auto rounded-xl border border-zinc-800 bg-zinc-900/70 p-4 font-mono text-xs leading-relaxed text-zinc-300">
-          {entries.some((e) => e.caption || e.scheduledAt)
-            ? entries.map((e) => buildCommand(e)).join('\n')
+          {entries.some(isReady)
+            ? entries.filter(isReady).map(buildCommand).join('\n')
             : '# Fill in caption, file path, and schedule time to generate commands'}
         </pre>
       </div>

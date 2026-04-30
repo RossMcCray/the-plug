@@ -2,6 +2,9 @@
 import { useState, useRef } from 'react';
 import type { HookAnalysis, UploadedImage } from '@/lib/types';
 
+const MAX_IMAGES = 10;
+const VALID_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+
 export default function ExtractorPage() {
   const [images, setImages] = useState<UploadedImage[]>([]);
   const [niche, setNiche] = useState('');
@@ -13,19 +16,23 @@ export default function ExtractorPage() {
 
   const handleFiles = (files: FileList | null) => {
     if (!files) return;
-    Array.from(files).forEach((file) => {
-      const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
-      if (!validTypes.includes(file.type)) return;
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const dataUrl = e.target?.result as string;
-        const base64 = dataUrl.split(',')[1];
-        setImages((prev) => [
-          ...prev,
-          { data: base64, mediaType: file.type as UploadedImage['mediaType'], name: file.name },
-        ]);
-      };
-      reader.readAsDataURL(file);
+    setImages((prev) => {
+      const remaining = Math.max(0, MAX_IMAGES - prev.length);
+      const toAdd = Array.from(files)
+        .filter((f) => VALID_TYPES.includes(f.type))
+        .slice(0, remaining);
+
+      toAdd.forEach((file) => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const dataUrl = e.target?.result as string;
+          const base64 = dataUrl.split(',')[1];
+          setImages((p) => [...p, { data: base64, mediaType: file.type as UploadedImage['mediaType'], name: file.name }]);
+        };
+        reader.readAsDataURL(file);
+      });
+
+      return prev; // FileReader callbacks update state asynchronously
     });
   };
 
@@ -37,9 +44,13 @@ export default function ExtractorPage() {
     if (!niche.trim()) { setError('Enter your niche first.'); return; }
     setLoading(true);
     try {
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+      const secret = process.env.NEXT_PUBLIC_EXTRACT_API_SECRET;
+      if (secret) headers['Authorization'] = `Bearer ${secret}`;
+
       const res = await fetch('/api/extract-hooks', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         body: JSON.stringify({ images, niche }),
       });
       const data = await res.json();
@@ -60,7 +71,14 @@ export default function ExtractorPage() {
       ...result,
       createdAt: new Date().toISOString(),
     };
-    const existing: HookAnalysis[] = JSON.parse(localStorage.getItem('plug_hooks') || '[]');
+    let existing: HookAnalysis[] = [];
+    try {
+      const raw = localStorage.getItem('plug_hooks');
+      const parsed = raw ? JSON.parse(raw) : [];
+      existing = Array.isArray(parsed) ? parsed : [];
+    } catch {
+      existing = [];
+    }
     localStorage.setItem('plug_hooks', JSON.stringify([entry, ...existing]));
     setSaved(true);
   };
@@ -77,14 +95,23 @@ export default function ExtractorPage() {
       {/* Upload area */}
       <div className="space-y-4">
         <div
+          role="button"
+          tabIndex={0}
+          aria-label="Upload slideshow images"
           onClick={() => fileInputRef.current?.click()}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              fileInputRef.current?.click();
+            }
+          }}
           onDrop={(e) => { e.preventDefault(); handleFiles(e.dataTransfer.files); }}
           onDragOver={(e) => e.preventDefault()}
-          className="flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-zinc-700 bg-zinc-900/50 px-6 py-12 transition-colors hover:border-violet-600 hover:bg-violet-950/10"
+          className="flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-zinc-700 bg-zinc-900/50 px-6 py-12 transition-colors hover:border-violet-600 hover:bg-violet-950/10 focus:outline-none focus:ring-2 focus:ring-violet-600"
         >
           <div className="mb-2 text-3xl">📂</div>
           <p className="text-sm text-zinc-300">Drop slideshow images here or click to browse</p>
-          <p className="mt-1 text-xs text-zinc-600">JPG, PNG, WebP · Max 10 images</p>
+          <p className="mt-1 text-xs text-zinc-600">JPG, PNG, WebP · Max {MAX_IMAGES} images</p>
           <input
             ref={fileInputRef}
             type="file"
@@ -158,7 +185,7 @@ export default function ExtractorPage() {
             <h2 className="mb-2 text-xs font-semibold uppercase tracking-widest text-violet-400">
               Main Hook Identified
             </h2>
-            <p className="text-lg font-semibold text-white">"{result.mainHook}"</p>
+            <p className="text-lg font-semibold text-white">&ldquo;{result.mainHook}&rdquo;</p>
           </div>
 
           {/* Why it works */}
@@ -172,7 +199,7 @@ export default function ExtractorPage() {
           {/* 7 variations */}
           <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-5">
             <h2 className="mb-3 text-xs font-semibold uppercase tracking-widest text-zinc-400">
-              7 Hook Variations for "{niche}"
+              7 Hook Variations for &ldquo;{niche}&rdquo;
             </h2>
             <ol className="space-y-2">
               {result.variations.map((v, i) => (

@@ -86,7 +86,7 @@ export default function Home() {
           From scroll to scheduled
           <br />
           <span className="bg-gradient-to-r from-violet-400 to-pink-400 bg-clip-text text-transparent">
-            in 6 steps.
+            in {steps.length} steps.
           </span>
         </h1>
         <p className="max-w-xl text-zinc-400">

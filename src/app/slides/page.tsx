@@ -100,13 +100,11 @@ function renderSlide(
   const lineHeight = Math.round(fontSize * 1.3);
   const margin = Math.round(80 * scale);
 
-  // Slide label top-left
   ctx.fillStyle = 'rgba(255,255,255,0.45)';
   ctx.font = `${Math.round(34 * scale)}px -apple-system, Arial, sans-serif`;
   ctx.textAlign = 'left';
   ctx.fillText(label.toUpperCase(), margin, margin + Math.round(20 * scale));
 
-  // Slide number dot top-right
   ctx.fillStyle = 'rgba(255,255,255,0.3)';
   ctx.font = `bold ${Math.round(30 * scale)}px -apple-system, Arial, sans-serif`;
   ctx.textAlign = 'right';
@@ -120,7 +118,6 @@ function renderSlide(
     return;
   }
 
-  // Main text centered
   ctx.fillStyle = 'white';
   ctx.font = `bold ${fontSize}px -apple-system, Arial, sans-serif`;
   ctx.textAlign = 'center';
@@ -128,29 +125,26 @@ function renderSlide(
 }
 
 export default function SlidesPage() {
-  const [slides, setSlides] = useState<SlideSet>(DEFAULT_SLIDES);
+  // Lazy init: read sessionStorage hook on first render, no setState-in-effect
+  const [slides, setSlides] = useState<SlideSet>(() => {
+    if (typeof window === 'undefined') return DEFAULT_SLIDES;
+    const hook = window.sessionStorage.getItem('plug_slide_hook');
+    return hook ? { ...DEFAULT_SLIDES, hook } : DEFAULT_SLIDES;
+  });
+
   const [bgDataUrl, setBgDataUrl] = useState<string | null>(null);
   const [bgImg, setBgImg] = useState<HTMLImageElement | null>(null);
   const [activeSlide, setActiveSlide] = useState(0);
   const canvasRefs = useRef<(HTMLCanvasElement | null)[]>([null, null, null, null, null, null]);
+  const textareaRefs = useRef<(HTMLTextAreaElement | null)[]>([null, null, null, null, null, null]);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Load hook from library via sessionStorage
+  // Only clear the sessionStorage key — no setState here
   useEffect(() => {
-    const hook = sessionStorage.getItem('plug_slide_hook');
-    if (hook) {
-      setSlides((s) => ({ ...s, hook }));
-      sessionStorage.removeItem('plug_slide_hook');
+    if (typeof window !== 'undefined') {
+      window.sessionStorage.removeItem('plug_slide_hook');
     }
   }, []);
-
-  // Sync bgDataUrl → HTMLImageElement
-  useEffect(() => {
-    if (!bgDataUrl) { setBgImg(null); return; }
-    const img = new Image();
-    img.onload = () => setBgImg(img);
-    img.src = bgDataUrl;
-  }, [bgDataUrl]);
 
   const redrawAll = useCallback(() => {
     canvasRefs.current.forEach((canvas, i) => {
@@ -173,22 +167,16 @@ export default function SlidesPage() {
     canvas.width = SLIDE_W;
     canvas.height = SLIDE_H;
     const ctx = canvas.getContext('2d')!;
-    const text = slideText(slides, index);
-
-    const doRender = () => {
-      renderSlide(ctx, SLIDE_W, SLIDE_H, text, SLIDE_LABELS[index], index, bgImg);
-      canvas.toBlob((blob) => {
-        if (!blob) return;
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `slide_0${index + 1}.png`;
-        a.click();
-        URL.revokeObjectURL(url);
-      }, 'image/png');
-    };
-
-    doRender();
+    renderSlide(ctx, SLIDE_W, SLIDE_H, slideText(slides, index), SLIDE_LABELS[index], index, bgImg);
+    canvas.toBlob((blob) => {
+      if (!blob) return;
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `slide_0${index + 1}.png`;
+      a.click();
+      URL.revokeObjectURL(url);
+    }, 'image/png');
   };
 
   const downloadAll = () => {
@@ -198,8 +186,19 @@ export default function SlidesPage() {
   const handleBgUpload = (file: File | null) => {
     if (!file) return;
     const reader = new FileReader();
-    reader.onload = (e) => setBgDataUrl(e.target?.result as string);
+    reader.onload = (e) => {
+      const dataUrl = e.target?.result as string;
+      setBgDataUrl(dataUrl);
+      const img = new Image();
+      img.onload = () => setBgImg(img);
+      img.src = dataUrl;
+    };
     reader.readAsDataURL(file);
+  };
+
+  const removeBg = () => {
+    setBgDataUrl(null);
+    setBgImg(null);
   };
 
   return (
@@ -236,10 +235,7 @@ export default function SlidesPage() {
           <p className="text-xs text-zinc-500">9:16 portrait from Pinterest. Used on all 6 slides.</p>
         </div>
         {bgDataUrl ? (
-          <button
-            onClick={() => setBgDataUrl(null)}
-            className="text-xs text-zinc-500 hover:text-zinc-300"
-          >
+          <button onClick={removeBg} className="text-xs text-zinc-500 hover:text-zinc-300">
             Remove
           </button>
         ) : (
@@ -275,6 +271,7 @@ export default function SlidesPage() {
                 {SLIDE_LABELS[i]}
               </label>
               <textarea
+                ref={(el) => { textareaRefs.current[i] = el; }}
                 value={slides[field]}
                 onChange={(e) => setSlideField(field, e.target.value)}
                 onFocus={() => setActiveSlide(i)}
@@ -298,7 +295,10 @@ export default function SlidesPage() {
                   className={`relative cursor-pointer overflow-hidden rounded-lg border transition-colors ${
                     activeSlide === i ? 'border-violet-500' : 'border-zinc-800 hover:border-zinc-600'
                   }`}
-                  onClick={() => setActiveSlide(i)}
+                  onClick={() => {
+                    setActiveSlide(i);
+                    textareaRefs.current[i]?.focus();
+                  }}
                   style={{ width: PREVIEW_W, height: PREVIEW_H }}
                 >
                   <canvas

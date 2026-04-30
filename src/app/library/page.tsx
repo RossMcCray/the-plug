@@ -1,18 +1,26 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import type { HookAnalysis } from '@/lib/types';
 
+function loadHooks(): HookAnalysis[] {
+  if (typeof window === 'undefined') return [];
+  try {
+    const raw = window.localStorage.getItem('plug_hooks');
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? (parsed as HookAnalysis[]) : [];
+  } catch {
+    window.localStorage.removeItem('plug_hooks');
+    return [];
+  }
+}
+
 export default function LibraryPage() {
-  const [hooks, setHooks] = useState<HookAnalysis[]>([]);
+  const [hooks, setHooks] = useState<HookAnalysis[]>(loadHooks);
   const [search, setSearch] = useState('');
   const [expanded, setExpanded] = useState<string | null>(null);
   const router = useRouter();
-
-  useEffect(() => {
-    const stored = localStorage.getItem('plug_hooks');
-    if (stored) setHooks(JSON.parse(stored));
-  }, []);
 
   const deleteHook = (id: string) => {
     const updated = hooks.filter((h) => h.id !== id);
@@ -67,7 +75,9 @@ export default function LibraryPage() {
           </p>
         </div>
       ) : filtered.length === 0 ? (
-        <p className="text-center text-sm text-zinc-500">No results for "{search}"</p>
+        <p className="text-center text-sm text-zinc-500">
+          No results for &ldquo;{search}&rdquo;
+        </p>
       ) : (
         <div className="space-y-4">
           {filtered.map((hook) => (
@@ -86,7 +96,7 @@ export default function LibraryPage() {
                       {new Date(hook.createdAt).toLocaleDateString()}
                     </span>
                   </div>
-                  <p className="mt-2 font-semibold text-white">"{hook.mainHook}"</p>
+                  <p className="mt-2 font-semibold text-white">&ldquo;{hook.mainHook}&rdquo;</p>
                   <p className="mt-1 text-xs text-zinc-500 line-clamp-2">{hook.whyItWorks}</p>
                 </div>
                 <div className="flex shrink-0 gap-2">
