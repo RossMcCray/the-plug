@@ -20,11 +20,14 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const body = await request.json();
-    const { images, niche } = body;
+    const body: unknown = await request.json();
+    if (!body || typeof body !== 'object' || Array.isArray(body)) {
+      return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
+    }
+    const { images, niche } = body as { images?: unknown; niche?: unknown };
 
     // Validate top-level shape
-    if (!Array.isArray(images) || images.length === 0 || !niche?.trim?.()) {
+    if (!Array.isArray(images) || images.length === 0 || typeof niche !== 'string' || !niche.trim()) {
       return NextResponse.json({ error: 'images (array) and niche are required' }, { status: 400 });
     }
     if (images.length > 10) {
@@ -36,6 +39,7 @@ export async function POST(request: NextRequest) {
     for (let idx = 0; idx < images.length; idx++) {
       const img = images[idx];
       if (
+        img === null ||
         typeof img !== 'object' ||
         typeof img.data !== 'string' ||
         img.data.length === 0 ||
@@ -118,8 +122,7 @@ Format your response as valid JSON only, with this exact structure — no markdo
 
     return NextResponse.json(parsed);
   } catch (err) {
-    const message = err instanceof Error ? err.message : 'Failed to extract hooks';
-    console.error('[extract-hooks]', message);
-    return NextResponse.json({ error: message }, { status: 500 });
+    console.error('[extract-hooks]', err instanceof Error ? err.message : err);
+    return NextResponse.json({ error: 'Failed to extract hooks' }, { status: 500 });
   }
 }
