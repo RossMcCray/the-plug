@@ -9,6 +9,9 @@ type ValidMediaType = (typeof VALID_TYPES)[number];
 const MAX_PER_IMAGE_BYTES = 10 * 1024 * 1024; // 10 MB decoded
 const MAX_TOTAL_BYTES = 30 * 1024 * 1024;     // 30 MB decoded total
 
+// Standard base64 alphabet — used to reject garbage before it reaches Anthropic
+const BASE64_RE = /^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/;
+
 export async function POST(request: NextRequest) {
   // Optional shared-secret guard. Set EXTRACT_API_SECRET in .env.local to enable.
   const requiredSecret = process.env.EXTRACT_API_SECRET;
@@ -20,7 +23,14 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const body: unknown = await request.json();
+    // Catch malformed JSON separately so it returns 400, not 500
+    let body: unknown;
+    try {
+      body = await request.json();
+    } catch {
+      return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
+    }
+
     if (!body || typeof body !== 'object' || Array.isArray(body)) {
       return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
     }
@@ -43,11 +53,12 @@ export async function POST(request: NextRequest) {
         typeof img !== 'object' ||
         typeof img.data !== 'string' ||
         img.data.length === 0 ||
+        !BASE64_RE.test(img.data) ||
         typeof img.mediaType !== 'string' ||
         !(VALID_TYPES as readonly string[]).includes(img.mediaType)
       ) {
         return NextResponse.json(
-          { error: `Image ${idx + 1} has an invalid shape or unsupported media type` },
+          { error: `Image ${idx + 1} has an invalid shape, encoding, or unsupported media type` },
           { status: 400 }
         );
       }
@@ -104,23 +115,27 @@ Format your response as valid JSON only, with this exact structure — no markdo
       return NextResponse.json({ error: 'Could not parse JSON from Claude response' }, { status: 500 });
     }
 
-    const parsed = JSON.parse(jsonMatch[0]);
+    // Narrow to a non-null object before accessing fields
+    const parsed: unknown = JSON.parse(jsonMatch[0]);
+    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+      return NextResponse.json({ error: 'Claude returned an unexpected payload shape' }, { status: 502 });
+    }
+    const p = parsed as Record<string, unknown>;
 
-    // Validate response shape
     if (
-      typeof parsed.mainHook !== 'string' ||
-      typeof parsed.whyItWorks !== 'string' ||
-      !Array.isArray(parsed.variations) ||
-      parsed.variations.length !== 7 ||
-      parsed.variations.some((v: unknown) => typeof v !== 'string') ||
-      !Array.isArray(parsed.pinterestQueries) ||
-      parsed.pinterestQueries.length !== 5 ||
-      parsed.pinterestQueries.some((q: unknown) => typeof q !== 'string')
+      typeof p.mainHook !== 'string' ||
+      typeof p.whyItWorks !== 'string' ||
+      !Array.isArray(p.variations) ||
+      p.variations.length !== 7 ||
+      p.variations.some((v: unknown) => typeof v !== 'string') ||
+      !Array.isArray(p.pinterestQueries) ||
+      p.pinterestQueries.length !== 5 ||
+      p.pinterestQueries.some((q: unknown) => typeof q !== 'string')
     ) {
       return NextResponse.json({ error: 'Claude returned an unexpected payload shape' }, { status: 502 });
     }
 
-    return NextResponse.json(parsed);
+    return NextResponse.json(p);
   } catch (err) {
     console.error('[extract-hooks]', err instanceof Error ? err.message : err);
     return NextResponse.json({ error: 'Failed to extract hooks' }, { status: 500 });
