@@ -1,0 +1,945 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Satorii YTT Portal Blueprint</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --espresso: #1C1410;
+    --espresso-mid: #2A1F18;
+    --espresso-light: #3D2B20;
+    --gold: #C9A96E;
+    --gold-light: #E2C68A;
+    --gold-dim: #8A6E42;
+    --cream: #F5EFE6;
+    --cream-dim: #D4C4B0;
+    --sage: #7A8C72;
+    --rust: #9B4A2E;
+    --text: #EDE4D8;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--espresso);
+    color: var(--text);
+    font-family: 'Jost', sans-serif;
+    font-weight: 300;
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  /* ─── HEADER ─── */
+  .header {
+    padding: 48px 60px 36px;
+    border-bottom: 1px solid rgba(201,169,110,0.2);
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+  }
+  .header-left h1 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 13px;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 8px;
+  }
+  .header-left h2 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 42px;
+    font-weight: 300;
+    line-height: 1.1;
+    color: var(--cream);
+  }
+  .header-left h2 em {
+    font-style: italic;
+    color: var(--gold-light);
+  }
+  .header-right {
+    text-align: right;
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--gold-dim);
+    line-height: 2;
+  }
+
+  /* ─── MAIN LAYOUT ─── */
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 60px 80px;
+  }
+
+  /* ─── SECTION TITLES ─── */
+  .section-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 11px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--gold);
+    padding: 52px 0 24px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+  }
+  .section-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: rgba(201,169,110,0.2);
+  }
+
+  /* ─── SITE MAP ─── */
+  .sitemap {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .root-node {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 0;
+  }
+  .node {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .node-box {
+    background: var(--espresso-light);
+    border: 1px solid var(--gold);
+    border-radius: 2px;
+    padding: 14px 28px;
+    text-align: center;
+    position: relative;
+    min-width: 180px;
+  }
+  .node-box.root {
+    background: var(--gold);
+    color: var(--espresso);
+    border-color: var(--gold);
+    padding: 16px 40px;
+    min-width: 220px;
+  }
+  .node-box.root .node-label {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 18px;
+    font-weight: 500;
+    color: var(--espresso);
+    letter-spacing: 0.1em;
+  }
+  .node-box.root .node-sub {
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--espresso-light);
+    margin-top: 3px;
+  }
+  .node-label {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 15px;
+    color: var(--cream);
+    letter-spacing: 0.05em;
+  }
+  .node-sub {
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--gold-dim);
+    margin-top: 2px;
+  }
+  .node-badge {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    background: var(--rust);
+    color: white;
+    font-size: 8px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 2px 6px;
+    border-radius: 2px;
+  }
+  .node-badge.green {
+    background: var(--sage);
+  }
+
+  .connector-v {
+    width: 1px;
+    background: rgba(201,169,110,0.35);
+    height: 32px;
+    margin: 0 auto;
+  }
+
+  .level-1 {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 0;
+  }
+  .level-1 .node {
+    align-items: center;
+  }
+  .level-1 .connector-v {
+    height: 28px;
+  }
+
+  .portal-section {
+    margin-top: 0;
+  }
+  .portal-highlight {
+    border: 1px solid rgba(201,169,110,0.4);
+    border-radius: 4px;
+    padding: 28px;
+    background: rgba(201,169,110,0.04);
+    position: relative;
+  }
+  .portal-highlight::before {
+    content: 'GATED — OUTSETA PROTECTED';
+    position: absolute;
+    top: -10px;
+    left: 24px;
+    background: var(--espresso);
+    padding: 0 12px;
+    font-size: 9px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--gold);
+  }
+  .portal-grid {
+    display: grid;
+    grid-template-columns: 220px 1fr;
+    gap: 24px;
+    align-items: start;
+  }
+  .portal-nav {
+    border-right: 1px solid rgba(201,169,110,0.2);
+    padding-right: 24px;
+  }
+  .portal-nav-title {
+    font-size: 10px;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--gold-dim);
+    margin-bottom: 12px;
+  }
+  .portal-nav-item {
+    padding: 10px 14px;
+    border: 1px solid rgba(201,169,110,0.15);
+    border-radius: 2px;
+    margin-bottom: 6px;
+    font-size: 12px;
+    color: var(--cream-dim);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    letter-spacing: 0.05em;
+  }
+  .portal-nav-item.active {
+    background: rgba(201,169,110,0.1);
+    border-color: rgba(201,169,110,0.4);
+    color: var(--gold-light);
+  }
+  .portal-nav-item .lock {
+    font-size: 9px;
+    color: var(--gold-dim);
+  }
+
+  .modules-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+  }
+  .module-card {
+    background: var(--espresso-mid);
+    border: 1px solid rgba(201,169,110,0.15);
+    border-radius: 2px;
+    padding: 16px;
+    position: relative;
+  }
+  .module-card.featured {
+    border-color: rgba(201,169,110,0.4);
+    background: rgba(201,169,110,0.06);
+  }
+  .module-num {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 32px;
+    color: rgba(201,169,110,0.2);
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+  .module-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 14px;
+    color: var(--cream);
+    margin-bottom: 8px;
+  }
+  .module-items {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .module-item {
+    font-size: 10px;
+    color: var(--cream-dim);
+    letter-spacing: 0.05em;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .module-item::before {
+    content: '';
+    width: 3px;
+    height: 3px;
+    background: var(--gold-dim);
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  /* ─── CMS ARCHITECTURE TABLE ─── */
+  .cms-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+  .cms-collection {
+    background: var(--espresso-mid);
+    border: 1px solid rgba(201,169,110,0.2);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .cms-collection-header {
+    background: rgba(201,169,110,0.1);
+    border-bottom: 1px solid rgba(201,169,110,0.2);
+    padding: 14px 20px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .cms-icon {
+    width: 30px;
+    height: 30px;
+    background: var(--gold);
+    border-radius: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    flex-shrink: 0;
+  }
+  .cms-collection-name {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 17px;
+    color: var(--cream);
+    flex: 1;
+  }
+  .cms-collection-desc {
+    font-size: 11px;
+    color: var(--gold-dim);
+    letter-spacing: 0.1em;
+  }
+  .cms-fields {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 0;
+  }
+  .cms-field {
+    padding: 10px 20px;
+    border-right: 1px solid rgba(201,169,110,0.08);
+    border-bottom: 1px solid rgba(201,169,110,0.08);
+  }
+  .field-name {
+    font-size: 12px;
+    color: var(--cream);
+    margin-bottom: 2px;
+    letter-spacing: 0.05em;
+  }
+  .field-type {
+    font-size: 10px;
+    color: var(--gold-dim);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .field-type-dot {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .type-text { background: #5B8FA8; }
+  .type-video { background: #8B5CF6; }
+  .type-file { background: var(--sage); }
+  .type-ref { background: var(--gold-dim); }
+  .type-bool { background: var(--rust); }
+  .type-num { background: #7C9E7A; }
+  .type-rich { background: #A0725A; }
+  .type-image { background: #6B8FA8; }
+
+  /* ─── OUTSETA FLOW ─── */
+  .flow-steps {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 0;
+    position: relative;
+  }
+  .flow-steps::before {
+    content: '';
+    position: absolute;
+    top: 32px;
+    left: 10%;
+    width: 80%;
+    height: 1px;
+    background: rgba(201,169,110,0.3);
+    z-index: 0;
+  }
+  .flow-step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 0 8px;
+    position: relative;
+    z-index: 1;
+  }
+  .flow-num {
+    width: 64px;
+    height: 64px;
+    background: var(--espresso-light);
+    border: 1px solid var(--gold);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 22px;
+    color: var(--gold);
+    margin-bottom: 14px;
+  }
+  .flow-num.active {
+    background: var(--gold);
+    color: var(--espresso);
+  }
+  .flow-step-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 14px;
+    color: var(--cream);
+    margin-bottom: 6px;
+  }
+  .flow-step-desc {
+    font-size: 10px;
+    color: var(--cream-dim);
+    letter-spacing: 0.05em;
+    line-height: 1.6;
+  }
+
+  /* ─── COST COMPARISON ─── */
+  .cost-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+  }
+  .cost-card {
+    background: var(--espresso-mid);
+    border: 1px solid rgba(201,169,110,0.15);
+    border-radius: 2px;
+    padding: 20px;
+  }
+  .cost-card.satorii {
+    border-color: var(--gold);
+    background: rgba(201,169,110,0.06);
+  }
+  .cost-platform {
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--gold-dim);
+    margin-bottom: 8px;
+  }
+  .cost-price {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 32px;
+    color: var(--cream);
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+  .cost-price span {
+    font-size: 14px;
+    color: var(--cream-dim);
+  }
+  .cost-card.satorii .cost-price {
+    color: var(--gold-light);
+  }
+  .cost-details {
+    font-size: 10px;
+    color: var(--cream-dim);
+    line-height: 1.8;
+    letter-spacing: 0.05em;
+    margin-top: 10px;
+    border-top: 1px solid rgba(201,169,110,0.1);
+    padding-top: 10px;
+  }
+  .cost-detail-item {
+    display: flex;
+    gap: 6px;
+    align-items: flex-start;
+  }
+  .cost-detail-item.pro::before { content: '✓'; color: var(--sage); flex-shrink: 0; }
+  .cost-detail-item.con::before { content: '×'; color: var(--rust); flex-shrink: 0; }
+
+  /* ─── FOOTER ─── */
+  .doc-footer {
+    margin-top: 60px;
+    padding-top: 24px;
+    border-top: 1px solid rgba(201,169,110,0.15);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--gold-dim);
+  }
+
+  @media print {
+    body { background: white; color: #1C1410; }
+  }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="header-left">
+    <h1>Satorii Yoga + Wellness</h1>
+    <h2>YTT Student Portal<br><em>Architecture Blueprint</em></h2>
+  </div>
+  <div class="header-right">
+    200-Hour Foundational<br>
+    Teacher Training<br>
+    Digital Infrastructure<br>
+    ─<br>
+    satorii.com/ytt
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- SECTION 1: SITE MAP -->
+  <div class="section-title">01 — Page Structure & Site Map</div>
+
+  <div class="sitemap">
+
+    <!-- Root -->
+    <div class="root-node">
+      <div class="node">
+        <div class="node-box root">
+          <div class="node-label">satorii.com</div>
+          <div class="node-sub">Webflow — Main Site</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="connector-v"></div>
+
+    <!-- Horizontal spread line -->
+    <div style="position:relative; height:1px; background:rgba(201,169,110,0.35); margin: 0 12%;"></div>
+
+    <div class="connector-v" style="height:16px;"></div>
+
+    <!-- Level 1: public pages -->
+    <div class="level-1">
+      <div class="node">
+        <div class="connector-v"></div>
+        <div class="node-box">
+          <div class="node-label">/ Home</div>
+          <div class="node-sub">Public</div>
+        </div>
+      </div>
+      <div class="node">
+        <div class="connector-v"></div>
+        <div class="node-box">
+          <div class="node-label">/teacher-trainings</div>
+          <div class="node-sub">Public — Sales Page</div>
+        </div>
+      </div>
+      <div class="node">
+        <div class="connector-v"></div>
+        <div class="node-box" style="border-color:var(--gold); background:rgba(201,169,110,0.08);">
+          <div class="node-badge green">New</div>
+          <div class="node-label">/ytt</div>
+          <div class="node-sub" style="color:var(--gold);">Portal Entry Point</div>
+        </div>
+      </div>
+      <div class="node">
+        <div class="connector-v"></div>
+        <div class="node-box">
+          <div class="node-label">/retreats</div>
+          <div class="node-sub">Public</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:flex; justify-content:center; margin-top:0;">
+      <div style="width:25%; display:flex; justify-content:center;">
+        <div class="connector-v" style="height:32px;"></div>
+      </div>
+    </div>
+
+    <!-- Portal gated section -->
+    <div class="portal-section">
+      <div class="portal-highlight">
+        <div class="portal-grid">
+
+          <!-- Sidebar Nav -->
+          <div class="portal-nav">
+            <div class="portal-nav-title">Student Navigation</div>
+            <div class="portal-nav-item active">
+              <span>Dashboard</span>
+              <span class="lock">🔐</span>
+            </div>
+            <div class="portal-nav-item">
+              <span>My Modules</span>
+              <span class="lock">🔐</span>
+            </div>
+            <div class="portal-nav-item">
+              <span>Digital Manuals</span>
+              <span class="lock">🔐</span>
+            </div>
+            <div class="portal-nav-item">
+              <span>Live Sessions</span>
+              <span class="lock">🔐</span>
+            </div>
+            <div class="portal-nav-item">
+              <span>Assignments</span>
+              <span class="lock">🔐</span>
+            </div>
+            <div class="portal-nav-item">
+              <span>Resources</span>
+              <span class="lock">🔐</span>
+            </div>
+            <div class="portal-nav-item">
+              <span>Certification</span>
+              <span class="lock">🔐</span>
+            </div>
+            <div style="margin-top:16px; padding-top:12px; border-top:1px solid rgba(201,169,110,0.15);">
+              <div class="portal-nav-item" style="border-color:rgba(201,169,110,0.3); color:var(--gold-dim); font-size:11px;">
+                <span>Login / Logout</span>
+                <span>→</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Module cards -->
+          <div>
+            <div style="font-size:11px; letter-spacing:0.2em; text-transform:uppercase; color:var(--gold-dim); margin-bottom:14px;">Course Modules — 200Hr YTT</div>
+            <div class="modules-grid">
+              <div class="module-card featured">
+                <div class="module-num">01</div>
+                <div class="module-title">Foundations of Yoga</div>
+                <div class="module-items">
+                  <div class="module-item">History & philosophy videos</div>
+                  <div class="module-item">Patanjali's 8 Limbs PDF</div>
+                  <div class="module-item">Sanskrit glossary</div>
+                  <div class="module-item">Week 1 journaling prompts</div>
+                </div>
+              </div>
+              <div class="module-card">
+                <div class="module-num">02</div>
+                <div class="module-title">Anatomy & Alignment</div>
+                <div class="module-items">
+                  <div class="module-item">Movement anatomy videos</div>
+                  <div class="module-item">Asana alignment manual</div>
+                  <div class="module-item">Common injuries PDF</div>
+                  <div class="module-item">Lab assignments</div>
+                </div>
+              </div>
+              <div class="module-card">
+                <div class="module-num">03</div>
+                <div class="module-title">Teaching Methodology</div>
+                <div class="module-items">
+                  <div class="module-item">Cueing & sequencing videos</div>
+                  <div class="module-item">Class structure templates</div>
+                  <div class="module-item">Practice teach recordings</div>
+                  <div class="module-item">Feedback forms</div>
+                </div>
+              </div>
+              <div class="module-card">
+                <div class="module-num">04</div>
+                <div class="module-title">Pranayama + Meditation</div>
+                <div class="module-items">
+                  <div class="module-item">Breathwork technique videos</div>
+                  <div class="module-item">Meditation guide PDF</div>
+                  <div class="module-item">Daily practice log</div>
+                  <div class="module-item">Audio recordings</div>
+                </div>
+              </div>
+              <div class="module-card">
+                <div class="module-num">05</div>
+                <div class="module-title">Ayurveda & Wellness</div>
+                <div class="module-items">
+                  <div class="module-item">Dosha assessment PDF</div>
+                  <div class="module-item">Ayurvedic lifestyle videos</div>
+                  <div class="module-item">Seasonal routines guide</div>
+                  <div class="module-item">Recipe + nutrition notes</div>
+                </div>
+              </div>
+              <div class="module-card">
+                <div class="module-num">06</div>
+                <div class="module-title">Practicum & Certification</div>
+                <div class="module-items">
+                  <div class="module-item">Final teach evaluation form</div>
+                  <div class="module-item">Peer review templates</div>
+                  <div class="module-item">Yoga Alliance paperwork</div>
+                  <div class="module-item">Certificate of completion</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /sitemap -->
+
+  <!-- SECTION 2: CMS ARCHITECTURE -->
+  <div class="section-title">02 — Webflow CMS Collections Architecture</div>
+
+  <div class="cms-grid">
+
+    <!-- Collection 1: Cohorts -->
+    <div class="cms-collection">
+      <div class="cms-collection-header">
+        <div class="cms-icon">📅</div>
+        <div>
+          <div class="cms-collection-name">YTT Cohorts</div>
+          <div class="cms-collection-desc">One item per training intake (e.g. "Fall 2025 200Hr")</div>
+        </div>
+      </div>
+      <div class="cms-fields">
+        <div class="cms-field"><div class="field-name">Cohort Name</div><div class="field-type"><span class="field-type-dot type-text"></span>Plain Text</div></div>
+        <div class="cms-field"><div class="field-name">Start Date</div><div class="field-type"><span class="field-type-dot type-num"></span>Date</div></div>
+        <div class="cms-field"><div class="field-name">End Date</div><div class="field-type"><span class="field-type-dot type-num"></span>Date</div></div>
+        <div class="cms-field"><div class="field-name">Program Type</div><div class="field-type"><span class="field-type-dot type-text"></span>Option (200Hr / 300Hr / Hybrid)</div></div>
+        <div class="cms-field"><div class="field-name">Lead Instructor</div><div class="field-type"><span class="field-type-dot type-text"></span>Plain Text</div></div>
+        <div class="cms-field"><div class="field-name">Enrollment Open</div><div class="field-type"><span class="field-type-dot type-bool"></span>Toggle (True/False)</div></div>
+        <div class="cms-field"><div class="field-name">Outseta Plan ID</div><div class="field-type"><span class="field-type-dot type-text"></span>Plain Text — links to gating</div></div>
+        <div class="cms-field"><div class="field-name">Cover Image</div><div class="field-type"><span class="field-type-dot type-image"></span>Image</div></div>
+      </div>
+    </div>
+
+    <!-- Collection 2: Modules -->
+    <div class="cms-collection">
+      <div class="cms-collection-header">
+        <div class="cms-icon">📚</div>
+        <div>
+          <div class="cms-collection-name">Modules</div>
+          <div class="cms-collection-desc">Top-level course sections (e.g. "Module 3 — Teaching Methodology")</div>
+        </div>
+      </div>
+      <div class="cms-fields">
+        <div class="cms-field"><div class="field-name">Module Title</div><div class="field-type"><span class="field-type-dot type-text"></span>Plain Text</div></div>
+        <div class="cms-field"><div class="field-name">Module Number</div><div class="field-type"><span class="field-type-dot type-num"></span>Number</div></div>
+        <div class="cms-field"><div class="field-name">Cohort (Ref)</div><div class="field-type"><span class="field-type-dot type-ref"></span>Reference → YTT Cohorts</div></div>
+        <div class="cms-field"><div class="field-name">Description</div><div class="field-type"><span class="field-type-dot type-rich"></span>Rich Text</div></div>
+        <div class="cms-field"><div class="field-name">Is Visible</div><div class="field-type"><span class="field-type-dot type-bool"></span>Toggle — drip control</div></div>
+        <div class="cms-field"><div class="field-name">Unlock Date</div><div class="field-type"><span class="field-type-dot type-num"></span>Date — optional drip</div></div>
+        <div class="cms-field"><div class="field-name">Estimated Hours</div><div class="field-type"><span class="field-type-dot type-num"></span>Number</div></div>
+        <div class="cms-field"><div class="field-name">Cover Image</div><div class="field-type"><span class="field-type-dot type-image"></span>Image</div></div>
+      </div>
+    </div>
+
+    <!-- Collection 3: Lessons -->
+    <div class="cms-collection">
+      <div class="cms-collection-header">
+        <div class="cms-icon">🎬</div>
+        <div>
+          <div class="cms-collection-name">Lessons</div>
+          <div class="cms-collection-desc">Individual content items within a module — videos, readings, audio</div>
+        </div>
+      </div>
+      <div class="cms-fields">
+        <div class="cms-field"><div class="field-name">Lesson Title</div><div class="field-type"><span class="field-type-dot type-text"></span>Plain Text</div></div>
+        <div class="cms-field"><div class="field-name">Lesson Number</div><div class="field-type"><span class="field-type-dot type-num"></span>Number</div></div>
+        <div class="cms-field"><div class="field-name">Module (Ref)</div><div class="field-type"><span class="field-type-dot type-ref"></span>Reference → Modules</div></div>
+        <div class="cms-field"><div class="field-name">Content Type</div><div class="field-type"><span class="field-type-dot type-text"></span>Option (Video / Audio / Reading / Practice)</div></div>
+        <div class="cms-field"><div class="field-name">Vimeo Embed URL</div><div class="field-type"><span class="field-type-dot type-video"></span>Plain Text — private Vimeo link</div></div>
+        <div class="cms-field"><div class="field-name">Body Content</div><div class="field-type"><span class="field-type-dot type-rich"></span>Rich Text — notes, context</div></div>
+        <div class="cms-field"><div class="field-name">Duration (mins)</div><div class="field-type"><span class="field-type-dot type-num"></span>Number</div></div>
+        <div class="cms-field"><div class="field-name">Is Preview</div><div class="field-type"><span class="field-type-dot type-bool"></span>Toggle — free preview</div></div>
+      </div>
+    </div>
+
+    <!-- Collection 4: Resources -->
+    <div class="cms-collection">
+      <div class="cms-collection-header">
+        <div class="cms-icon">📄</div>
+        <div>
+          <div class="cms-collection-name">Resources & Manuals</div>
+          <div class="cms-collection-desc">Downloadable PDFs, digital manuals, templates, audio files</div>
+        </div>
+      </div>
+      <div class="cms-fields">
+        <div class="cms-field"><div class="field-name">Resource Title</div><div class="field-type"><span class="field-type-dot type-text"></span>Plain Text</div></div>
+        <div class="cms-field"><div class="field-name">Resource Type</div><div class="field-type"><span class="field-type-dot type-text"></span>Option (Manual / Worksheet / Audio / Template)</div></div>
+        <div class="cms-field"><div class="field-name">Module (Ref)</div><div class="field-type"><span class="field-type-dot type-ref"></span>Reference → Modules</div></div>
+        <div class="cms-field"><div class="field-name">File (Upload)</div><div class="field-type"><span class="field-type-dot type-file"></span>File — PDF, MP3, etc.</div></div>
+        <div class="cms-field"><div class="field-name">Google Drive URL</div><div class="field-type"><span class="field-type-dot type-text"></span>Plain Text — backup link</div></div>
+        <div class="cms-field"><div class="field-name">Description</div><div class="field-type"><span class="field-type-dot type-rich"></span>Rich Text</div></div>
+        <div class="cms-field"><div class="field-name">Is Required</div><div class="field-type"><span class="field-type-dot type-bool"></span>Toggle</div></div>
+        <div class="cms-field"><div class="field-name">Sort Order</div><div class="field-type"><span class="field-type-dot type-num"></span>Number</div></div>
+      </div>
+    </div>
+
+    <!-- Collection 5: Live Sessions -->
+    <div class="cms-collection">
+      <div class="cms-collection-header">
+        <div class="cms-icon">🎥</div>
+        <div>
+          <div class="cms-collection-name">Live Sessions</div>
+          <div class="cms-collection-desc">Scheduled Zoom sessions + post-event recordings</div>
+        </div>
+      </div>
+      <div class="cms-fields">
+        <div class="cms-field"><div class="field-name">Session Title</div><div class="field-type"><span class="field-type-dot type-text"></span>Plain Text</div></div>
+        <div class="cms-field"><div class="field-name">Date & Time</div><div class="field-type"><span class="field-type-dot type-num"></span>Date + Time</div></div>
+        <div class="cms-field"><div class="field-name">Cohort (Ref)</div><div class="field-type"><span class="field-type-dot type-ref"></span>Reference → YTT Cohorts</div></div>
+        <div class="cms-field"><div class="field-name">Zoom Link</div><div class="field-type"><span class="field-type-dot type-text"></span>Plain Text</div></div>
+        <div class="cms-field"><div class="field-name">Recording URL</div><div class="field-type"><span class="field-type-dot type-video"></span>Plain Text — post-session Vimeo</div></div>
+        <div class="cms-field"><div class="field-name">Session Notes</div><div class="field-type"><span class="field-type-dot type-rich"></span>Rich Text</div></div>
+        <div class="cms-field"><div class="field-name">Is Mandatory</div><div class="field-type"><span class="field-type-dot type-bool"></span>Toggle</div></div>
+        <div class="cms-field"><div class="field-name">Session Type</div><div class="field-type"><span class="field-type-dot type-text"></span>Option (Training / Practicum / Q&A)</div></div>
+      </div>
+    </div>
+
+  </div><!-- /cms-grid -->
+
+  <!-- SECTION 3: OUTSETA FLOW -->
+  <div class="section-title">03 — Student Enrollment Flow (Outseta)</div>
+
+  <div class="flow-steps">
+    <div class="flow-step">
+      <div class="flow-num">1</div>
+      <div class="flow-step-title">Student Discovers YTT</div>
+      <div class="flow-step-desc">Visits satorii.com/<br>teacher-trainings<br>(public sales page)</div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-num active">2</div>
+      <div class="flow-step-title">Clicks Enroll</div>
+      <div class="flow-step-desc">Outseta checkout<br>appears on-site<br>Stripe payment<br>+ account creation</div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-num">3</div>
+      <div class="flow-step-title">Account Created</div>
+      <div class="flow-step-desc">Outseta auto-creates<br>student login<br>Email confirmation<br>+ welcome sent</div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-num">4</div>
+      <div class="flow-step-title">Portal Access Unlocked</div>
+      <div class="flow-step-desc">satorii.com/ytt<br>becomes accessible<br>All modules visible<br>or drip-released</div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-num">5</div>
+      <div class="flow-step-title">Ongoing Access</div>
+      <div class="flow-step-desc">Student returns<br>via email/password<br>Progress tracked<br>Certificate issued</div>
+    </div>
+  </div>
+
+  <!-- SECTION 4: TOOL COST COMPARISON -->
+  <div class="section-title">04 — Platform Comparison</div>
+
+  <div class="cost-grid">
+    <div class="cost-card">
+      <div class="cost-platform">Kajabi</div>
+      <div class="cost-price">$149<span>/mo</span></div>
+      <div class="cost-details">
+        <div class="cost-detail-item con">Revenue cut on sales</div>
+        <div class="cost-detail-item con">Kajabi branding</div>
+        <div class="cost-detail-item con">Lives on kajabi.com</div>
+        <div class="cost-detail-item pro">All-in-one</div>
+        <div class="cost-detail-item pro">Easy to start</div>
+      </div>
+    </div>
+    <div class="cost-card">
+      <div class="cost-platform">Teachable</div>
+      <div class="cost-price">$99<span>/mo</span></div>
+      <div class="cost-details">
+        <div class="cost-detail-item con">5% transaction fee</div>
+        <div class="cost-detail-item con">Teachable branding</div>
+        <div class="cost-detail-item con">Limited design control</div>
+        <div class="cost-detail-item pro">Simple setup</div>
+        <div class="cost-detail-item pro">Course focus</div>
+      </div>
+    </div>
+    <div class="cost-card">
+      <div class="cost-platform">Skool</div>
+      <div class="cost-price">$99<span>/mo</span></div>
+      <div class="cost-details">
+        <div class="cost-detail-item con">Community-first, not LMS</div>
+        <div class="cost-detail-item con">No custom domain control</div>
+        <div class="cost-detail-item con">Skool aesthetic</div>
+        <div class="cost-detail-item pro">Community features</div>
+        <div class="cost-detail-item pro">Gamification</div>
+      </div>
+    </div>
+    <div class="cost-card satorii">
+      <div class="cost-platform" style="color:var(--gold);">Satorii Own Portal</div>
+      <div class="cost-price">~$49<span>/mo total</span></div>
+      <div class="cost-details">
+        <div class="cost-detail-item pro">100% Satorii branded</div>
+        <div class="cost-detail-item pro">Lives on satorii.com</div>
+        <div class="cost-detail-item pro">Zero revenue cut</div>
+        <div class="cost-detail-item pro">You own all data</div>
+        <div class="cost-detail-item pro">Scales to 5 studios</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- LEGEND -->
+  <div style="margin-top:32px; padding:20px; border:1px solid rgba(201,169,110,0.15); border-radius:2px; background:var(--espresso-mid);">
+    <div style="font-size:10px; letter-spacing:0.25em; text-transform:uppercase; color:var(--gold-dim); margin-bottom:14px;">CMS Field Type Legend</div>
+    <div style="display:flex; flex-wrap:wrap; gap:20px;">
+      <div style="display:flex; align-items:center; gap:6px; font-size:11px; color:var(--cream-dim);">
+        <div class="field-type-dot type-text" style="width:8px;height:8px;border-radius:50%;"></div>Plain Text
+      </div>
+      <div style="display:flex; align-items:center; gap:6px; font-size:11px; color:var(--cream-dim);">
+        <div class="field-type-dot type-rich" style="width:8px;height:8px;border-radius:50%;"></div>Rich Text
+      </div>
+      <div style="display:flex; align-items:center; gap:6px; font-size:11px; color:var(--cream-dim);">
+        <div class="field-type-dot type-video" style="width:8px;height:8px;border-radius:50%;"></div>Video/Embed URL
+      </div>
+      <div style="display:flex; align-items:center; gap:6px; font-size:11px; color:var(--cream-dim);">
+        <div class="field-type-dot type-file" style="width:8px;height:8px;border-radius:50%;"></div>File Upload
+      </div>
+      <div style="display:flex; align-items:center; gap:6px; font-size:11px; color:var(--cream-dim);">
+        <div class="field-type-dot type-ref" style="width:8px;height:8px;border-radius:50%;"></div>Reference (links collections)
+      </div>
+      <div style="display:flex; align-items:center; gap:6px; font-size:11px; color:var(--cream-dim);">
+        <div class="field-type-dot type-bool" style="width:8px;height:8px;border-radius:50%;"></div>Toggle (True/False)
+      </div>
+      <div style="display:flex; align-items:center; gap:6px; font-size:11px; color:var(--cream-dim);">
+        <div class="field-type-dot type-num" style="width:8px;height:8px;border-radius:50%;"></div>Number / Date
+      </div>
+      <div style="display:flex; align-items:center; gap:6px; font-size:11px; color:var(--cream-dim);">
+        <div class="field-type-dot type-image" style="width:8px;height:8px;border-radius:50%;"></div>Image
+      </div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="doc-footer">
+    <span>Satorii Yoga + Wellness — Confidential Internal Document</span>
+    <span>YTT Portal Blueprint — 2025–2026</span>
+  </div>
+
+</div><!-- /container -->
+</body>
+</html>
